@@ -8,8 +8,12 @@ python-dotenv = "*"
 langchain = "*"
 langchain-openai = "*"
 langchain-community = "*"
+ipykernel = "*"
+langchain-teddynote = "*"
+faiss-cpu = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.10"
