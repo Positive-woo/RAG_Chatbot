@@ -11,8 +11,10 @@ from langchain_teddynote.document_loaders import HWPLoader
 
 load_dotenv()
 
+
+
 # 문서 로드
-loader = HWPLoader("C:/Users/wjddn/Documents/taejung/RAG_Chatbot/volume/test.hwp")
+loader = HWPLoader(os.environ["HWP_PATH"])
 docs = loader.load()
 
 # 문서 분할
