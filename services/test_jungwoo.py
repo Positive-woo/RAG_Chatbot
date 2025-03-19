@@ -61,3 +61,9 @@ ensemble_retriever = EnsembleRetriever(
 # 사용자 입력 & 검색 실행
 query = input("질문을 입력하세요: ")
 results = ensemble_retriever.invoke(query)
+
+# 검색된 문서 출력
+for i, doc in enumerate(results):
+    print(f"문서 {i+1}:")
+    print(doc)
+    print("\n")  # 문서 끝에 두 줄 띄우기
