@@ -34,7 +34,7 @@ else:
     # 문서 로드 및 분할
     loader = HWPLoader(os.environ["HWP_PATH"])
     docs = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=256, chunk_overlap=20)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=256, chunk_overlap=50)
     splits = text_splitter.split_documents(docs)
 
     # 원본 텍스트 저장 (BM25 용)
@@ -47,15 +47,15 @@ else:
     vector_db.save_local(vector_db_path)
 
 # FAISS 검색기 생성
-faiss_retriever = vector_db.as_retriever(search_kwargs={"k": 1})
+faiss_retriever = vector_db.as_retriever(search_kwargs={"k": 2})
 
 # BM25 검색기 생성
 bm25_retriever = BM25Retriever.from_texts(split_texts)
-bm25_retriever.k = 1
+bm25_retriever.k = 2
 
 # Hybrid 검색기 생성
 ensemble_retriever = EnsembleRetriever(
-    retrievers=[bm25_retriever, faiss_retriever], weights=[0.7, 0.3]
+    retrievers=[bm25_retriever, faiss_retriever], weights=[0.5, 0.5]
 )
 
 # 사용자 입력 & 검색 실행
