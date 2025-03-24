@@ -9,6 +9,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_teddynote.document_loaders import HWPLoader
+from langchain_core.prompts import PromptTemplate
+
 
 load_dotenv()
 
@@ -47,15 +49,15 @@ else:
     vector_db.save_local(vector_db_path)
 
 # FAISS 검색기 생성
-faiss_retriever = vector_db.as_retriever(search_kwargs={"k": 1})
+faiss_retriever = vector_db.as_retriever(search_kwargs={"k": 2})
 
 # BM25 검색기 생성
 bm25_retriever = BM25Retriever.from_texts(split_texts)
-bm25_retriever.k = 1
+bm25_retriever.k = 2
 
 # Hybrid 검색기 생성
 ensemble_retriever = EnsembleRetriever(
-    retrievers=[bm25_retriever, faiss_retriever], weights=[0.5, 0.5]
+    retrievers=[bm25_retriever, faiss_retriever], weights=[0.3, 0.7]
 )
 
 # 사용자 입력 & 검색 실행
@@ -67,3 +69,41 @@ for i, doc in enumerate(results):
     print(f"문서 {i+1}:")
     print(doc)
     print("\n")  # 문서 끝에 두 줄 띄우기
+
+
+# context를 문자열로 변환
+context_text = "\n\n".join([doc.page_content for doc in results])
+
+custom_prompt = PromptTemplate.from_template(
+    """
+    다음은 문서를 기반으로 한 질문입니다. 
+    제공된 문맥(context)에 답이 없으면 "해당 정보가 문서에 없습니다."라고 답하세요.
+
+    문맥:
+    {context}
+
+    질문:
+    {question}
+
+    답변:
+    """
+)
+
+
+# LLM 설정
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
+
+# 파이프라인 구성
+rag_chain = (
+    custom_prompt
+    | llm
+    | StrOutputParser()
+)
+
+# 결과 생성
+answer = rag_chain.invoke({"context": context_text,
+                        "question": query})
+
+# 답변 출력
+print("\n--- 답변 ---")
+print(answer)
