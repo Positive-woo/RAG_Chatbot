@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import os
 import pickle
 from langchain import hub
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from langchain_community.vectorstores import Chroma, FAISS
 from langchain.retrievers import BM25Retriever, EnsembleRetriever
 from langchain_core.output_parsers import StrOutputParser
@@ -10,12 +10,14 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_teddynote.document_loaders import HWPLoader
 from langchain_core.prompts import PromptTemplate
+from langchain_core.documents import Document
 
 
 load_dotenv()
 
 # 벡터DB 및 BM25 저장 경로 설정
 vector_db_path = os.environ["VECTOR_STORE_PATH"]
+txt_path = os.environ["TXT_PATH"]
 faiss_index_path = os.path.join(vector_db_path, "index.faiss")  # FAISS 인덱스 저장 파일
 bm25_docs_path = os.path.join(vector_db_path, "bm25_docs.pkl")  # BM25용 문서 저장 파일
 
@@ -33,11 +35,19 @@ if os.path.exists(faiss_index_path):
 else:
     print("벡터 스토어가 없습니다. 새로운 벡터DB 생성")
 
-    # 문서 로드 및 분할
-    loader = HWPLoader(os.environ["HWP_PATH"])
-    docs = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=256, chunk_overlap=50)
-    splits = text_splitter.split_documents(docs)
+    # 텍스트 파일 경로
+    txt_path = "C:/Users/wjddn/Documents/taejung/volume/test.txt"
+
+    # 텍스트 파일 읽기
+    with open(txt_path, "r", encoding="utf-8") as f:
+        text = f.read()
+
+    # \n\n 기준으로 자르고, 빈 줄 제거 후 Document로 감싸기
+    splits = [
+        Document(page_content=chunk.strip())
+        for chunk in text.split("\n\n")
+        if chunk.strip()
+    ]    
 
     # 원본 텍스트 저장 (BM25 용)
     split_texts = [doc.page_content for doc in splits]
@@ -57,7 +67,7 @@ bm25_retriever.k = 2
 
 # Hybrid 검색기 생성
 ensemble_retriever = EnsembleRetriever(
-    retrievers=[bm25_retriever, faiss_retriever], weights=[0.3, 0.7]
+    retrievers=[bm25_retriever, faiss_retriever], weights=[0.5, 0.5]
 )
 
 # 사용자 입력 & 검색 실행
@@ -76,8 +86,10 @@ context_text = "\n\n".join([doc.page_content for doc in results])
 
 custom_prompt = PromptTemplate.from_template(
     """
-    다음은 문서를 기반으로 한 질문입니다. 
-    제공된 문맥(context)에 답이 없으면 "해당 정보가 문서에 없습니다."라고 답하세요.
+    아래 문맥(context)을 기반으로 사용자 질문에 답변하세요.  
+    관련된 정보가 여러 개일 경우 **모두 빠짐없이 정리해서 목록 형태로 제시**하세요.  
+    문맥에 해당 정보가 **전혀 없으면**, "해당 정보가 문서에 없습니다."라고 정확히 답하세요.
+    답변은 3줄 이내로만 작성하면 됩니다.
 
     문맥:
     {context}
@@ -103,6 +115,11 @@ rag_chain = (
 # 결과 생성
 answer = rag_chain.invoke({"context": context_text,
                         "question": query})
+
+filled_prompt = custom_prompt.format(context=context_text, question=query)
+print("\n--- 입력된 프롬프트 ---")
+print(filled_prompt)
+
 
 # 답변 출력
 print("\n--- 답변 ---")
