@@ -47,11 +47,11 @@ else:
     vector_db.save_local(vector_db_path)
 
 # FAISS 검색기 생성
-faiss_retriever = vector_db.as_retriever(search_kwargs={"k": 2})
+faiss_retriever = vector_db.as_retriever(search_kwargs={"k": 1})
 
 # BM25 검색기 생성
 bm25_retriever = BM25Retriever.from_texts(split_texts)
-bm25_retriever.k = 2
+bm25_retriever.k = 1
 
 # Hybrid 검색기 생성
 ensemble_retriever = EnsembleRetriever(
