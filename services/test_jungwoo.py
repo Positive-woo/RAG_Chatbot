@@ -58,7 +58,6 @@ def vector_db_maker():
 
 if os.path.exists(faiss_index_path):
     # 기존거 사용할지 새로 할지 int input 받기. 만약 새로 사용한다고 하면 else로 넘어가도록
-    print("대화를 종료하려면 exit , q 등을 입력해주세요.")
     choice = int(input("기존 벡터 DB가 있습니다. 그대로 사용하시려면 1을 입력해주세요. 새로 생성하시려면 2를 누르세요. : "))
     if choice == 1:
         print("기존 vector db 사용")
@@ -117,6 +116,7 @@ rag_chain = (
 
 while True:
     # 사용자 입력 & 검색 실행
+    print("대화를 종료하려면 exit , q 등을 입력해주세요.")
     query = input("질문을 입력하세요: ")
     if query.lower() in ["exit", "q"]:
         print("대화를 종료합니다.")
