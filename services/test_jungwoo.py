@@ -116,7 +116,9 @@ rag_chain = (
 
 while True:
     # 사용자 입력 & 검색 실행
-    print("대화를 종료하려면 exit , q 등을 입력해주세요.")
+
+    print("대화를 종료하려면 exit , q 등을 입력해주세요.;;")
+
     query = input("질문을 입력하세요: ")
     if query.lower() in ["exit", "q"]:
         print("대화를 종료합니다.")
