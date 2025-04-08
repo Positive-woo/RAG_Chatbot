@@ -2,14 +2,10 @@ from dotenv import load_dotenv
 import os
 import pickle
 import shutil
-from langchain import hub
-from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
-from langchain_community.vectorstores import Chroma, FAISS
+from langchain_community.vectorstores import FAISS
 from langchain.retrievers import BM25Retriever, EnsembleRetriever
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_teddynote.document_loaders import HWPLoader
 from langchain_core.prompts import PromptTemplate
 from langchain_core.documents import Document
 
