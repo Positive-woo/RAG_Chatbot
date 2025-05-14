@@ -1,0 +1,3 @@
+BEGIN TRANSACTION;
+CREATE TABLE ChatSession (chat_id INTEGER PRIMARY KEY NOT NULL, session_id INTEGER NOT NULL, message_id INTEGER NOT NULL, content TEXT, content_answer TEXT, sendtime INTEGER NOT NULL, respontime INTEGER NOT NULL);
+COMMIT;
